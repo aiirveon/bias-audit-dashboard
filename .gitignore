@@ -1,0 +1,42 @@
+# Environment variables — never commit API keys
+.env
+.env.local
+.env.production
+
+# Trained model — regenerates at Render startup
+*.pkl
+*.pickle
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+
+# Next.js
+.next/
+out/
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Supabase local
+.supabase/
