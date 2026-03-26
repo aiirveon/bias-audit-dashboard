@@ -1,0 +1,74 @@
+@import '../styles/tokens.css';
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', monospace;
+
+  --color-background:         var(--background);
+  --color-foreground:         var(--foreground);
+  --color-card:               var(--card);
+  --color-primary:            var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted:              var(--muted);
+  --color-muted-foreground:   var(--muted-foreground);
+  --color-accent:             var(--accent);
+  --color-destructive:        var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border:             var(--border);
+  --color-input:              var(--input);
+  --color-ring:               var(--ring);
+  --color-panel:              var(--panel);
+  --color-panel-dark:         var(--panel-dark);
+  --color-recommendations:    var(--recommendations-bg);
+  --color-score-high:         var(--score-high);
+  --color-score-mid:          var(--score-mid);
+  --color-score-low:          var(--score-low);
+  --color-verdict-neutral:    var(--verdict-neutral);
+  --color-verdict-low:        var(--verdict-low);
+  --color-verdict-medium:     var(--verdict-medium);
+  --color-verdict-high:       var(--verdict-high);
+  --color-gated:              var(--gated);
+  --color-gated-border:       var(--gated-border);
+  --color-gated-foreground:   var(--gated-foreground);
+
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 4px;
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, var(--panel-dark) 0%, var(--border) 50%, var(--panel-dark) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.status-pulse { animation: status-pulse 2s ease-in-out infinite; }
+
+.score-bar { width: var(--score-bar-width, 0%); }
+
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+::-webkit-scrollbar { width: var(--scrollbar-width); height: var(--scrollbar-width); }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
