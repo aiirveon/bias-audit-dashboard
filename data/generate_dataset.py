@@ -151,24 +151,23 @@ CATEGORY_PROMPTS: dict[str, dict[str, str]] = {
 
     "geographic_bias": {
         "clear": (
-            "Generate UK media content that clearly disadvantages creators, stories, or "
-            "topics from certain regions. The geographic bias must be explicit. "
-            "UK regional examples: presenting Northern England, Wales, Scotland, or "
-            "Northern Ireland as culturally or intellectually inferior to London; "
-            "dismissing regional accents, voices, or perspectives as unsophisticated. "
-            "International examples: framing stories from Africa, South Asia, or the "
-            "Middle East as inherently less credible than Western sources. "
-            "Include both UK internal and international geographic bias."
+            "Write UK media content that attributes negative CHARACTER TRAITS to people "
+            "from a specific region — claiming they lack intelligence, ambition, work ethic, "
+            "sophistication, or capability compared to people from other areas. "
+            "Examples: northerners vs Londoners, rural vs urban, Welsh/Scottish/Northern "
+            "Irish vs English. The bias must be in the CHARACTER CLAIM, not just mentioning "
+            "a place name. Examples of the pattern: 'People from X lack Y', 'X residents "
+            "are too Z to compete', 'Those from X simply don't have the drive to'. "
+            "UK media register."
         ),
         "subtle": (
-            "Generate UK media content with subtle geographic bias — present but not "
-            "overtly dismissive of regions. "
-            "UK regional techniques: implying London is the natural centre of culture and "
-            "talent; treating Northern or regional voices as novelties; framing regional "
-            "perspectives as parochial or limited in scope. "
-            "International techniques: word choices implying Western sources are inherently "
-            "more authoritative; framing non-Western cultural practices as surprising; "
-            "othering language that distances non-London or non-Western subjects."
+            "Write UK media content with subtle geographic bias through framing — implying "
+            "regional inferiority without stating it directly. Examples: presenting northern "
+            "or rural investment as charity rather than entitlement, framing London success "
+            "as the national default, describing regional accents or culture as obstacles to "
+            "professional advancement, statistics presented to imply geographic determinism. "
+            "Must be distinguishable from racial or demographic bias — the disadvantage is "
+            "based purely on location/region."
         ),
     },
 
