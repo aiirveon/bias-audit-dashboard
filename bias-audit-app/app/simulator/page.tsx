@@ -141,7 +141,7 @@ export default function SimulatorPage() {
             <span className="text-[9px] text-muted-foreground ml-auto">{comments.length} comments</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          <div className="flex-1 panel-scroll px-4 py-4 space-y-3">
             {comments.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-2 py-20">
                 <p className="text-[10px] tracking-widest text-muted-foreground uppercase">No comments yet</p>
@@ -229,7 +229,7 @@ export default function SimulatorPage() {
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          <div className="flex-1 panel-scroll px-4 py-4 space-y-3">
             {pending.length === 0 && reviewed.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-2 py-20">
                 <p className="text-[10px] tracking-widest text-muted-foreground uppercase">Queue empty</p>

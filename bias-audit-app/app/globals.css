@@ -68,6 +68,26 @@
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
+/* Simulator panel scrollbars — uses design system tokens, no hardcoded values */
+.panel-scroll {
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--panel);
+}
+.panel-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.panel-scroll::-webkit-scrollbar-track {
+  background: var(--panel);
+}
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+.panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
 ::-webkit-scrollbar { width: var(--scrollbar-width); height: var(--scrollbar-width); }
 ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
