@@ -21,7 +21,7 @@ explainer = None
 # Tier 2: 4–15 words  → Claude API classification only, no SHAP, cost ~£0.0003
 # Tier 3: > 15 words  → full XGBoost + SHAP pipeline, cost ~£0.0001
 
-TIER1_MAX_WORDS = 3
+TIER1_MAX_WORDS = 2
 TIER2_MAX_WORDS = 15
 
 TIER2_SYSTEM = (

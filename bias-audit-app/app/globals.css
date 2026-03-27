@@ -70,7 +70,7 @@
 
 /* Simulator panel scrollbars — uses design system tokens, no hardcoded values */
 .panel-scroll {
-  overflow-y: scroll;
+  overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border) var(--panel);
 }

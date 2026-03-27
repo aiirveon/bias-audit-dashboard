@@ -70,6 +70,7 @@ export default function SimulatorPage() {
         status: "approved",
       };
       setComments(prev => [...prev, shortComment]);
+      setValue("");
       setIsPosting(false);
       return;
     }
