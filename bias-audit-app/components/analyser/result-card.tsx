@@ -56,20 +56,48 @@ export function ResultCard({
         </span>
       </div>
 
-      {/* SHAP highlights */}
+      {/* SHAP waterfall bars */}
       {shapWords.length > 0 && (
-        <div className="space-y-1">
-          <p className="text-[9px] tracking-widest text-muted-foreground uppercase">TRIGGERED BY</p>
-          <div className="flex flex-wrap gap-1.5">
-            {shapWords.slice(0, 6).map((word, i) => (
-              <span
-                key={i}
-                className="text-[10px] px-1.5 py-0.5 bg-primary/10 border border-primary/30 text-primary font-mono"
-              >
-                {word}
-              </span>
-            ))}
+        <div className="space-y-1.5">
+          <p className="text-[9px] tracking-widest text-muted-foreground uppercase">SHAP Feature Impact</p>
+          <div className="space-y-1">
+            {Object.entries(shap_values)
+              .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+              .slice(0, 6)
+              .map(([word, value], i) => {
+                const isPositive = value > 0;
+                const maxVal = Math.max(...Object.values(shap_values).map(Math.abs));
+                const pct = maxVal > 0 ? (Math.abs(value) / maxVal) * 50 : 0;
+                return (
+                  <div key={i} className="flex items-center gap-2 h-5">
+                    <span className="text-[9px] font-mono text-muted-foreground w-24 truncate text-right shrink-0">
+                      {word}
+                    </span>
+                    <div className="flex-1 flex items-center relative h-4">
+                      {/* centre line */}
+                      <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border" />
+                      {isPositive ? (
+                        <div
+                          className="absolute left-1/2 h-3 bg-destructive/70"
+                          style={{ width: `${pct}%` }}
+                        />
+                      ) : (
+                        <div
+                          className="absolute h-3 bg-blue-500/60"
+                          style={{ right: "50%", width: `${pct}%` }}
+                        />
+                      )}
+                    </div>
+                    <span className={`text-[9px] font-mono tabular-nums w-10 shrink-0 ${isPositive ? "text-destructive" : "text-blue-400"}`}>
+                      {value > 0 ? "+" : ""}{value.toFixed(3)}
+                    </span>
+                  </div>
+                );
+              })}
           </div>
+          <p className="text-[8px] text-muted-foreground/50 pt-0.5">
+            Red = pushes toward bias · Blue = pushes toward neutral
+          </p>
         </div>
       )}
 
