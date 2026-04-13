@@ -21,6 +21,15 @@ interface Comment {
 const AVATARS = ["AT", "BK", "CL", "DM", "EN", "FO", "GP", "HQ"];
 const AUTHORS = ["Alex T.", "Bex K.", "Carl L.", "Dana M.", "Eren N.", "Fiona O.", "Greg P.", "Hana Q."];
 
+const COMMENT_BANK: { category: string; text: string }[] = [
+  { category: "racial_bias",         text: "Studies consistently show that people of African descent are more prone to criminal behaviour and violence in densely populated urban areas." },
+  { category: "religious_bias",       text: "Muslim communities across Britain are failing to integrate and their religious practices pose a serious ongoing threat to traditional British values." },
+  { category: "gender_stereotyping",  text: "Women are naturally better suited to caregiving and domestic tasks while men are the ones built for leadership and high-pressure demanding careers." },
+  { category: "demographic_bias",     text: "Older workers over fifty are far too slow to adapt to new technology and should be replaced by younger more capable and energetic employees." },
+  { category: "geographic_bias",      text: "Content produced by Eastern European creators consistently lacks the quality and production standards that Western audiences and advertisers have come to expect." },
+  { category: "neutral",              text: "The city council announced plans to expand the public transport network with three new bus routes and extended evening services starting from next month." },
+];
+
 function getAuthor(id: string) {
   const idx = Math.abs(id.charCodeAt(0) + id.charCodeAt(1)) % AUTHORS.length;
   return { name: AUTHORS[idx], avatar: AVATARS[idx] };
@@ -48,32 +57,22 @@ export default function SimulatorPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [input, setValue] = useState("");
   const [isPosting, setIsPosting] = useState(false);
+  const [isBurstRunning, setIsBurstRunning] = useState(false);
   const feedBottomRef = useRef<HTMLDivElement>(null);
+  const cycleIndexRef = useRef(0);
+  const prevCommentCountRef = useRef(0);
 
   useEffect(() => {
-    feedBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (comments.length > prevCommentCountRef.current) {
+      feedBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    prevCommentCountRef.current = comments.length;
   }, [comments]);
 
   const handlePost = async () => {
     if (!input.trim() || isPosting) return;
     const id = crypto.randomUUID();
     const text = input.trim();
-
-    // Skip analysis for very short inputs — model unreliable under 4 words
-    const wordCount = text.split(/\s+/).length;
-    if (wordCount < 4) {
-      const shortComment: Comment = {
-        id,
-        author: getAuthor(id).name,
-        text,
-        timestamp: timeNow(),
-        status: "approved",
-      };
-      setComments(prev => [...prev, shortComment]);
-      setValue("");
-      setIsPosting(false);
-      return;
-    }
 
     setValue("");
     setIsPosting(true);
@@ -120,6 +119,68 @@ export default function SimulatorPage() {
     }
   };
 
+  const handleRun = async () => {
+    if (isBurstRunning) return;
+    setIsBurstRunning(true);
+
+    const picks = [0, 1, 2].map(offset => {
+      const entry = COMMENT_BANK[cycleIndexRef.current % COMMENT_BANK.length];
+      cycleIndexRef.current += 1;
+      return entry;
+    });
+
+    const postOne = async (entry: { category: string; text: string }) => {
+      const id = crypto.randomUUID();
+      const newComment: Comment = {
+        id,
+        author: getAuthor(id).name,
+        text: entry.text,
+        timestamp: timeNow(),
+        status: "analysing",
+      };
+      setComments(prev => [...prev, newComment]);
+      try {
+        const result = await analyseContent(entry.text);
+        const exp = await explainResult({
+          content: entry.text,
+          score: result.score,
+          category: result.category,
+          confidence: result.confidence,
+          shap_values: result.shap_values,
+        });
+        setComments(prev =>
+          prev.map(c =>
+            c.id === id
+              ? {
+                  ...c,
+                  status: "pending",
+                  score: result.score,
+                  category: result.category,
+                  confidence: result.confidence,
+                  shap_values: result.shap_values,
+                  explanation: exp.explanation,
+                }
+              : c
+          )
+        );
+      } catch {
+        setComments(prev =>
+          prev.map(c => (c.id === id ? { ...c, status: "approved" } : c))
+        );
+      }
+    };
+
+    const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+    const promises = picks.map((entry, i) =>
+      delay(i * 800).then(() => postOne(entry))
+    );
+    try {
+      await Promise.all(promises);
+    } finally {
+      setIsBurstRunning(false);
+    }
+  };
+
   const handleAction = (id: string, action: "approved" | "flagged" | "removed") => {
     setComments(prev =>
       prev.map(c => (c.id === id ? { ...c, status: action } : c))
@@ -130,19 +191,26 @@ export default function SimulatorPage() {
   const reviewed = comments.filter(c => c.status === "approved" || c.status === "flagged" || c.status === "removed");
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen overflow-hidden bg-background">
       <TopNav />
-      <div className="flex-1 overflow-hidden grid grid-cols-2 divide-x divide-border">
+      <div className="flex flex-row flex-1 overflow-hidden divide-x divide-border">
 
         {/* ── LEFT: PUBLIC FEED ── */}
-        <div className="flex flex-col h-full">
-          <div className="px-5 py-3 border-b border-border bg-panel-dark flex items-center gap-2">
+        <div className="flex flex-col w-1/2 min-h-0 overflow-hidden">
+          <div className="px-5 py-3 min-h-[44px] h-10 shrink-0 border-b border-border bg-panel-dark flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-score-high status-pulse" />
             <span className="text-[10px] tracking-widest text-muted-foreground uppercase">Public Feed</span>
             <span className="text-[9px] text-muted-foreground ml-auto">{comments.length} comments</span>
+            <button
+              onClick={handleRun}
+              disabled={isBurstRunning}
+              className="px-3 py-1.5 border border-primary text-primary text-[9px] tracking-widest uppercase hover:bg-primary hover:text-background transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isBurstRunning ? "..." : "RUN"}
+            </button>
           </div>
 
-          <div className="flex-1 panel-scroll px-4 py-4 space-y-3">
+          <div className="flex-1 min-h-0 overflow-y-auto panel-scroll px-4 py-4 space-y-3">
             {comments.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-2 py-20">
                 <p className="text-[10px] tracking-widest text-muted-foreground uppercase">No comments yet</p>
@@ -220,8 +288,8 @@ export default function SimulatorPage() {
         </div>
 
         {/* ── RIGHT: MODERATION QUEUE ── */}
-        <div className="flex flex-col h-full">
-          <div className="px-5 py-3 border-b border-border bg-panel-dark flex items-center gap-2">
+        <div className="flex flex-col w-1/2 min-h-0 overflow-hidden">
+          <div className="px-5 py-3 min-h-[44px] h-10 shrink-0 border-b border-border bg-panel-dark flex items-center gap-2">
             <span className="text-[10px] tracking-widest text-muted-foreground uppercase">Moderation Queue</span>
             {pending.length > 0 && (
               <span className="text-[9px] font-mono bg-destructive/20 text-destructive border border-destructive/30 px-1.5 py-0.5">
@@ -230,7 +298,7 @@ export default function SimulatorPage() {
             )}
           </div>
 
-          <div className="flex-1 panel-scroll px-4 py-4 space-y-3">
+          <div className="flex-1 min-h-0 overflow-y-auto panel-scroll px-4 py-4 space-y-3">
             {pending.length === 0 && reviewed.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-2 py-20">
                 <p className="text-[10px] tracking-widest text-muted-foreground uppercase">Queue empty</p>
