@@ -31,7 +31,8 @@ The human always makes the final decision. The system never acts autonomously.
 | Backend | FastAPI, Python |
 | ML Model | TF-IDF + XGBoost (scikit-learn) |
 | Explainability | SHAP TreeExplainer |
-| Fairness | Fairlearn (Microsoft) |
+| Fairness (v1) | pandas — dataset balance ratio only (see note below) |
+| Fairness (v2, planned) | Fairlearn (Microsoft) — prediction-level fairness metrics |
 | LLM Layer | Anthropic Claude API (claude-haiku-4-5) |
 | Charts | Recharts |
 | Database | Supabase (Postgres + audit log) |
@@ -44,6 +45,8 @@ The human always makes the final decision. The system never acts autonomously.
 
 Trained on 3,000 synthetic UK media content items (2,400 train / 600 test).
 
+These F1 scores measure the **Tier 3 XGBoost classifier only** (inputs of 16+ words). Tier 2 (Claude API, used for most short inputs such as headlines and comments) is not separately benchmarked in v1. See [docs/MODEL_DECISIONS.md](docs/MODEL_DECISIONS.md) for the full accuracy caveat.
+
 | Category | F1 Score |
 |----------|----------|
 | demographic_bias | 0.89 |
@@ -54,8 +57,9 @@ Trained on 3,000 synthetic UK media content items (2,400 train / 600 test).
 | religious_bias | 0.95 |
 | **Overall** | **0.90** |
 
-Fairness constraint: no category flagged at more than 2x the rate of any other.  
-Current disparity ratio: 1.00x — constraint satisfied.
+**Dataset balance ratio (v1):** The `/audit` endpoint counts how many biased-labelled items exist per category in the synthetic training CSV and reports max-count / min-count as `disparity_ratio`. Current value: ~1.00x, because the dataset was generated with approximately equal examples per category (~500 each). This measures dataset construction evenness — it says nothing about whether the model misclassifies one category's content more than another's on real predictions. It is not a model fairness metric.
+
+**Model-level fairness evaluation** (per-category false-positive-rate disparity, equal opportunity, predictive parity) is planned for v2 using Fairlearn. It is not computed in v1. See [docs/MODEL_DECISIONS.md](docs/MODEL_DECISIONS.md) and [docs/ETHICS.md](docs/ETHICS.md) for the full gap statement.
 
 ---
 
@@ -113,7 +117,9 @@ Environment variables:
 
 ## Key design decisions
 
-**Why TF-IDF + XGBoost over a transformer?** SHAP values map directly to input tokens — every word highlight shown to the reviewer is traceable and auditable. For a trust and safety tool, explainability is non-negotiable.
+**Tiered classification router — latency, cost, and explainability trade-off.** The classifier routes inputs by word count across three tiers. Inputs of 2 words or fewer (Tier 1) receive no classification and a zero-confidence result — there is no signal to act on. Inputs of 3–15 words (Tier 2, most headlines and short comments) go to the Claude API for semantic classification; confidence here is LLM-estimated, not calibrated, and SHAP is not available. Inputs of 16+ words (Tier 3) use TF-IDF + XGBoost, which is fast (under 100 ms), free per inference, and produces calibrated `predict_proba` confidence with SHAP word highlights. The F1 scores in the table above describe Tier 3 only. If the Claude API fails on a Tier 2 call, the response returns `category: "unavailable"` and `degraded: true` — never a silent "neutral" — because passing content as safe when the classifier never ran is the most dangerous possible failure mode.
+
+**Why TF-IDF + XGBoost for Tier 3?** SHAP values map directly to input tokens — every word highlight shown to the reviewer is traceable and auditable. For a trust and safety tool, explainability is non-negotiable on longer-form content where the classical model has enough signal to be reliable.
 
 **Why synthetic training data?** No real user content stored or processed. Full control over category balance. No copyright or data governance issues.
 

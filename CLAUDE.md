@@ -32,7 +32,8 @@ Type: B2B AI product for trust and safety teams at UK media companies
 | Frontend       | Next.js 15, TypeScript, Tailwind  |
 | Backend        | FastAPI, Python                   |
 | ML Model       | Scikit-learn, XGBoost             |
-| Fairness       | Fairlearn (Microsoft)             |
+| Fairness (v1)  | pandas — dataset balance ratio only |
+| Fairness (v2)  | Fairlearn (Microsoft) — planned, not in v1 |
 | Explainability | SHAP                              |
 | LLM Layer      | Anthropic Claude API              |
 | Charts         | Recharts                          |
@@ -133,8 +134,10 @@ Screen 2 — Audit Dashboard
   Overall fairness health indicator — green / amber / red
   Powered by Recharts
 
-Screen 3 — Fairness Metrics Panel
-  Four metrics with pass/fail status and plain English explanation:
+Screen 3 — Fairness Metrics Panel _(v2 / not implemented in v1)_
+  Designed but not built in v1. v1 shows only the dataset balance ratio
+  (max/min biased-example count per category) from GET /api/audit.
+  v2 will add four prediction-level metrics via Fairlearn:
   - Demographic parity
   - Equal opportunity
   - Predictive parity
@@ -229,7 +232,7 @@ Backend (.env):
 - Train text classifier — TF-IDF vectoriser + Logistic Regression or XGBoost
 - Evaluate model — precision, recall, F1 score per category (target above 0.78)
 - Run SHAP on model — token-level feature importance per prediction
-- Validate model fairness — no category misclassified at more than 2x the rate of others
+- Validate dataset balance — no category has more than 2x the biased-labelled examples of any other in the synthetic CSV (prediction-level fairness metrics via Fairlearn are v2)
 - Save trained model as classifier.pkl
 - Document all model decisions in /docs/MODEL_DECISIONS.md
 
@@ -250,7 +253,7 @@ Backend (.env):
 - Magic link auth via Supabase
 - Screen 1: Live Content Analyser — chat input fixed at bottom, result cards above
 - Screen 2: Audit Dashboard — flag rate charts, disparity scores, fairness health indicator
-- Screen 3: Fairness Metrics Panel — four metrics with pass/fail and plain English explanation
+- Screen 3: Fairness Metrics Panel — v2 / not implemented in v1 (see Screen 3 description above)
 - Screen 4: Audit Log — table with timestamp, verdict, confidence, reviewer action, PDF export
 - Cold start handling — silent health ping on mount, warming up state in UI
 - Deployed to Vercel
@@ -284,4 +287,4 @@ Backend (.env):
 Model F1 score across all six categories: above 0.78
 Employer can test live demo in under 60 seconds: yes
 Plain English explanation accurate for every verdict: verified on 50 test cases
-No category flagged at more than 2x the rate of any other: confirmed
+Dataset balance ratio (max/min biased-example count per category in synthetic CSV) ≤ 2×: confirmed (~1.00×). Note: this measures dataset construction evenness, not model prediction fairness. Prediction-level fairness (Fairlearn) is v2.

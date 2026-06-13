@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { TopNav } from "@/components/top-nav";
 import { FlagRateChart } from "@/components/dashboard/flag-rate-chart";
 import { FairnessHealth } from "@/components/dashboard/fairness-health";
-import { FairnessMetrics } from "@/components/dashboard/fairness-metrics";
 import { getAuditMetrics } from "@/lib/api";
 import type { AuditResult } from "@/lib/api";
 
@@ -104,8 +103,19 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <FlagRateChart  flagRates={data.flag_rates} />
-            <FairnessMetrics />
+            <FlagRateChart flagRates={data.flag_rates} />
+
+            {/* v2 placeholder — no fabricated metrics */}
+            <div className="border border-border border-dashed p-5">
+              <p className="text-[9px] tracking-widest text-muted-foreground uppercase">
+                PREDICTION-LEVEL FAIRNESS METRICS — PLANNED FOR V2
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Demographic parity, equal opportunity, predictive parity, and individual fairness
+                will be computed via Fairlearn against real predictions in v2.
+                The dataset balance ratio above reflects synthetic dataset construction only.
+              </p>
+            </div>
           </>
         ) : (
           <p className="text-sm text-muted-foreground">Failed to load audit data.</p>

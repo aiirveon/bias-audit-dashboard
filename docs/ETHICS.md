@@ -38,7 +38,9 @@ A reviewer who cannot understand why a piece of content was scored high-risk can
 
 A bias detection tool that flags one category's content at a systematically higher rate than another is itself a source of bias.
 
-Fairness constraint: no bias category may be flagged at more than 2× the rate of any other category across the evaluation dataset.
+Fairness constraint (design target): no bias category may be flagged at more than 2× the rate of any other category in real-prediction outcomes.
+
+**v1 implementation status:** v1 reports a dataset balance ratio — the max/min count of biased-labelled examples per category in the synthetic training CSV. This checks that the dataset was constructed evenly; it does not measure whether the model's predictions on real content are fair. Prediction-level fairness evaluation (per-category false-positive rates, equal opportunity, predictive parity) is planned for v2 using Fairlearn and is not implemented in v1. See `docs/MODEL_DECISIONS.md` for the full gap statement.
 
 ### 2.4 Uncertainty must be communicated honestly
 
@@ -98,7 +100,7 @@ Places a duty of care on platforms to protect users from illegal and harmful con
 
 ### Ofcom
 
-Regulates broadcasters and on-demand services. The audit dashboard and fairness metrics panel provide aggregate evidence of bias monitoring presentable to Ofcom.
+Regulates broadcasters and on-demand services. The audit dashboard and audit log provide aggregate evidence of bias monitoring activity presentable to Ofcom. Full prediction-level fairness metrics (§6) are planned for v2 — v1 reports dataset balance only.
 
 ### UK GDPR
 
@@ -106,7 +108,9 @@ In v1, no real personal data is processed. If real content is processed in futur
 
 ---
 
-## 6. Fairness metrics — definitions
+## 6. Fairness metrics — definitions (v2 design targets, not computed in v1)
+
+**Status: these four metrics are defined here as design targets for v2. None of them are computed in v1.** v1 only computes a dataset balance ratio (max/min biased-example count per category in the synthetic CSV), which is described in `docs/MODEL_DECISIONS.md`. The definitions below are preserved because they represent the intended fairness evaluation design and will become acceptance criteria for v2.
 
 ### Demographic Parity
 
@@ -136,12 +140,14 @@ Plain English: "Similar content is scored similarly regardless of which group is
 
 ## 7. Ongoing responsibilities
 
-| Responsibility | Owner | Frequency |
-|---------------|-------|-----------|
-| Re-evaluate fairness metrics after model retraining | Aiir | Every retrain |
-| Review 50 test cases for explanation accuracy | Aiir | Every release |
-| Check no category flagged at >2× rate of others | Aiir | Every retrain |
-| DPIA before processing real user content | Aiir | Before v2 |
+| Responsibility | Owner | Frequency | v1 status |
+|---------------|-------|-----------|-----------|
+| Re-evaluate dataset balance ratio after retraining | Aiir | Every retrain | Implemented — audit.py |
+| Implement Fairlearn prediction-level fairness metrics | Aiir | Before v2 launch | Not yet implemented |
+| Re-evaluate full fairness metrics (§6) after model retraining | Aiir | Every retrain (from v2) | Planned — not in v1 |
+| Review 50 test cases for explanation accuracy | Aiir | Every release | In progress |
+| Check no category flagged at >2× rate of others (real predictions) | Aiir | Every retrain (from v2) | Not yet — v1 checks dataset balance only |
+| DPIA before processing real user content | Aiir | Before v2 | Pending |
 
 ---
 

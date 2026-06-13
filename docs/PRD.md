@@ -45,7 +45,8 @@ The human always decides. The system never acts autonomously.
 |------|--------|--------|
 | Fast time-to-decision | Time to review and action one piece of content | < 90 seconds |
 | Accurate detection | F1 score per bias category | > 0.78 |
-| Balanced detection | No category flagged at > 2× rate of any other | Confirmed |
+| Balanced detection (v1) | Dataset balance ratio (max/min biased-example count per category in synthetic CSV) ≤ 2× | Confirmed — ~1.00× (reflects dataset construction, not model prediction fairness) |
+| Balanced detection (v2, planned) | No category flagged at > 2× rate of any other in real predictions (Fairlearn) | Not yet implemented |
 | Explainability | Plain English explanation accurate on manual review | ≥ 96% of 50 test cases |
 | Auditability | Every decision logged with timestamp, verdict, confidence, action | 100% |
 | Demo-ready | Employer tests live demo without friction | < 60 seconds to first result |
@@ -60,8 +61,8 @@ The human always decides. The system never acts autonomously.
   religious_bias, geographic_bias, neutral
 - Score (0–100), category, confidence, SHAP highlights, Claude explanation
 - Reviewer action: Approve · Flag · Escalate — saved to audit log
-- Audit dashboard: flag rates, disparity scores, fairness health indicator
-- Fairness metrics panel: 4 metrics, pass/fail, plain English explanation
+- Audit dashboard: flag rates, dataset balance ratio, fairness health indicator (green/amber/red based on dataset balance — not prediction-level fairness)
+- Fairness metrics panel: 4 metrics, pass/fail, plain English explanation — **v2 / not implemented in v1** (see FR-03)
 - Audit log: full history, exportable to PDF
 - Magic link auth via Supabase
 - Cold start handling: health ping, warming up state
@@ -98,17 +99,19 @@ The human always decides. The system never acts autonomously.
 |----|-------------|----------|
 | FR-02-01 | Flag rates by category shown as bar chart (Recharts) | P0 |
 | FR-02-02 | Disparity scores shown across categories | P0 |
-| FR-02-03 | Fairness health indicator: green / amber / red | P0 |
+| FR-02-03 | Fairness health indicator: green / amber / red — based on dataset balance ratio (max/min biased-example count per category); not a prediction-level fairness metric | P0 — shipped |
 | FR-02-04 | Data from GET /api/audit | P0 |
 
-### FR-03 — Fairness Metrics Panel
+### FR-03 — Fairness Metrics Panel _(v2 / not implemented in v1)_
 
-| ID | Requirement | Priority |
-|----|-------------|----------|
-| FR-03-01 | Four metrics: demographic parity, equal opportunity, predictive parity, individual fairness | P0 |
-| FR-03-02 | Each metric shows pass / fail | P0 |
-| FR-03-03 | Each metric shows plain English explanation | P0 |
-| FR-03-04 | Computed using Fairlearn (Microsoft) | P0 |
+> **v1 status:** FR-03 was designed but not implemented in v1. The four prediction-level fairness metrics below require a held-out real-prediction test set and Fairlearn integration, neither of which exists in v1. v1 reports only the dataset balance ratio (FR-02-03). FR-03 requirements are preserved here as v2 acceptance criteria.
+
+| ID | Requirement | Priority | v1 status |
+|----|-------------|----------|-----------|
+| FR-03-01 | Four metrics: demographic parity, equal opportunity, predictive parity, individual fairness | P0 | Not implemented — v2 |
+| FR-03-02 | Each metric shows pass / fail | P0 | Not implemented — v2 |
+| FR-03-03 | Each metric shows plain English explanation | P0 | Not implemented — v2 |
+| FR-03-04 | Computed using Fairlearn (Microsoft) | P0 | Not implemented — v2 |
 
 ### FR-04 — Audit Log
 
@@ -154,7 +157,7 @@ POST /api/analyse
   Response: { score: float, category: string, confidence: float, shap_values: object }
 
 POST /api/explain
-  Request:  { score: float, category: string, confidence: float, shap_values: object }
+  Request:  { content: string, score: float, category: string, confidence: float, shap_values: object }
   Response: { explanation: string }
 
 GET /api/audit

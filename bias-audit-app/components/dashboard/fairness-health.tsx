@@ -16,7 +16,7 @@ export function FairnessHealth({ health, disparity }: FairnessHealthProps) {
     <div className={`bg-panel border ${cfg.border} p-5 flex items-center justify-between`}>
       <div className="space-y-1">
         <p className="text-[9px] tracking-widest text-muted-foreground uppercase">
-          OVERALL FAIRNESS HEALTH
+          DATASET BALANCE
         </p>
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
@@ -26,9 +26,9 @@ export function FairnessHealth({ health, disparity }: FairnessHealthProps) {
         </div>
       </div>
       <div className="text-right">
-        <p className="text-[9px] tracking-widest text-muted-foreground uppercase">DISPARITY RATIO</p>
+        <p className="text-[9px] tracking-widest text-muted-foreground uppercase">BALANCE RATIO</p>
         <p className={`font-mono text-xl tabular-nums ${cfg.color}`}>{disparity.toFixed(2)}×</p>
-        <p className="text-[9px] text-muted-foreground">max / min flag rate</p>
+        <p className="text-[9px] text-muted-foreground">max / min labelled-bias count per category</p>
       </div>
     </div>
   );

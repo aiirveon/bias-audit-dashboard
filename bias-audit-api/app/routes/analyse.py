@@ -10,10 +10,15 @@ class AnalyseRequest(BaseModel):
 
 
 class AnalyseResponse(BaseModel):
-    score:       float
-    category:    str
-    confidence:  float
-    shap_values: dict
+    score:           float
+    category:        str
+    confidence:      float
+    confidence_type: str
+    shap_values:     dict
+    tier:            int
+    tier_reason:     str
+    degraded:        bool = False
+    error:           str | None = None
 
 
 @router.post("/analyse", response_model=AnalyseResponse)
@@ -24,8 +29,13 @@ def analyse(request: AnalyseRequest):
     result = predict(request.content)
 
     return AnalyseResponse(
-        score       = result["score"],
-        category    = result["category"],
-        confidence  = result["confidence"],
-        shap_values = result["shap_values"],
+        score           = result["score"],
+        category        = result["category"],
+        confidence      = result["confidence"],
+        confidence_type = result["confidence_type"],
+        shap_values     = result["shap_values"],
+        tier            = result["tier"],
+        tier_reason     = result["tier_reason"],
+        degraded        = result.get("degraded", False),
+        error           = result.get("error"),
     )

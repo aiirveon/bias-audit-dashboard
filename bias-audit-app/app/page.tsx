@@ -8,14 +8,19 @@ import { WarmingUp } from "@/components/analyser/warming-up";
 import { analyseContent, explainResult, pingHealth } from "@/lib/api";
 
 interface AnalysisItem {
-  id:          string;
-  content:     string;
-  score:       number;
-  category:    string;
-  confidence:  number;
-  shap_values: Record<string, number>;
-  explanation: string;
-  actionTaken?: string;
+  id:              string;
+  content:         string;
+  score:           number;
+  category:        string;
+  confidence:      number;
+  shap_values:     Record<string, number>;
+  tier:            number;
+  tier_reason:     string;
+  confidence_type: string;
+  degraded:        boolean;
+  error?:          string;
+  explanation:     string;
+  actionTaken?:    string;
 }
 
 export default function Home() {
@@ -42,21 +47,32 @@ export default function Home() {
     setLoading(true);
     try {
       const result = await analyseContent(content);
-      const exp    = await explainResult({
-        content,
-        score:       result.score,
-        category:    result.category,
-        confidence:  result.confidence,
-        shap_values: result.shap_values,
-      });
+
+      let explanation = "";
+      if (!result.degraded) {
+        const exp = await explainResult({
+          content,
+          score:       result.score,
+          category:    result.category,
+          confidence:  result.confidence,
+          shap_values: result.shap_values,
+        });
+        explanation = exp.explanation;
+      }
+
       setItems(prev => [...prev, {
-        id:          crypto.randomUUID(),
+        id:              crypto.randomUUID(),
         content,
-        score:       result.score,
-        category:    result.category,
-        confidence:  result.confidence,
-        shap_values: result.shap_values,
-        explanation: exp.explanation,
+        score:           result.score,
+        category:        result.category,
+        confidence:      result.confidence,
+        shap_values:     result.shap_values,
+        tier:            result.tier,
+        tier_reason:     result.tier_reason,
+        confidence_type: result.confidence_type,
+        degraded:        result.degraded,
+        error:           result.error,
+        explanation,
       }]);
     } catch (e) {
       console.error(e);

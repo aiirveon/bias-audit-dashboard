@@ -102,9 +102,8 @@ will** reduce regulatory risk and demonstrate compliance at scale.
 - Bias risk score (0–100), category label, confidence %, SHAP word
   highlights, plain English explanation
 - Reviewer action: Approve · Flag · Escalate — logged to audit trail
-- Audit dashboard: flag rates by category, fairness health indicator
-- Fairness metrics panel: demographic parity, equal opportunity,
-  predictive parity, individual fairness
+- Audit dashboard: flag rates by category, dataset balance ratio, fairness health indicator (green/amber/red based on dataset balance — not prediction-level fairness)
+- Fairness metrics panel: demographic parity, equal opportunity, predictive parity, individual fairness — **v2 / not implemented in v1**; v1 reports only the dataset balance ratio (see MODEL_DECISIONS.md)
 - Audit log: full history, exportable to PDF
 
 ---
@@ -137,7 +136,8 @@ will** reduce regulatory risk and demonstrate compliance at scale.
 This project demonstrates:
 
 - **Responsible AI product thinking** — human-in-the-loop architecture,
-  SHAP explainability, Fairlearn fairness metrics, ethics documentation
+  SHAP explainability, ethics documentation, dataset balance monitoring in v1,
+  and prediction-level fairness metrics via Fairlearn roadmapped for v2
 - **Full-stack technical execution** — FastAPI backend, Next.js frontend,
   XGBoost model, Supabase database, deployed on Render + Vercel
 - **B2B product instincts** — compliance use case, audit trail, PDF

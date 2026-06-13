@@ -47,14 +47,16 @@ def load_model():
 
 
 def _tier1_predict(content: str) -> dict:
-    """Tier 1 — 3 words or fewer. No analysis. Return neutral instantly."""
+    """Tier 1 — 2 words or fewer. No analysis at all. Return explicit zero-confidence result."""
     return {
-        "category":    "neutral",
-        "confidence":  1.0,
-        "score":       0.0,
-        "shap_values": {},
-        "tier":        1,
-        "tier_reason": "Input too short for reliable analysis (3 words or fewer).",
+        "category":        "neutral",
+        "confidence":      0.0,
+        "confidence_type": "none",
+        "score":           0.0,
+        "shap_values":     {},
+        "tier":            1,
+        "tier_reason":     "Input too short for reliable analysis (2 words or fewer). No classification performed.",
+        "degraded":        False,
     }
 
 
@@ -106,22 +108,27 @@ def _tier2_predict(content: str) -> dict:
         result = json.loads(raw)
 
         return {
-            "category":    result.get("category", "neutral"),
-            "confidence":  float(result.get("confidence", 0.5)),
-            "score":       float(result.get("score", 50.0)),
-            "shap_values": {},
-            "tier":        2,
-            "tier_reason": result.get("reasoning", ""),
+            "category":        result.get("category", "neutral"),
+            "confidence":      float(result.get("confidence", 0.5)),
+            "confidence_type": "estimated",
+            "score":           float(result.get("score", 50.0)),
+            "shap_values":     {},
+            "tier":            2,
+            "tier_reason":     result.get("reasoning", ""),
+            "degraded":        False,
         }
 
     except Exception as e:
         return {
-            "category":    "neutral",
-            "confidence":  0.5,
-            "score":       0.0,
-            "shap_values": {},
-            "tier":        2,
-            "tier_reason": f"Classification unavailable: {str(e)}",
+            "category":        "unavailable",
+            "confidence":      0.0,
+            "confidence_type": "estimated",
+            "score":           0.0,
+            "shap_values":     {},
+            "tier":            2,
+            "tier_reason":     f"Claude API failure: {type(e).__name__}: {e}",
+            "degraded":        True,
+            "error":           f"Claude API failure: {type(e).__name__}: {e}",
         }
 
 
@@ -157,12 +164,14 @@ def _tier3_predict(content: str) -> dict:
     }
 
     return {
-        "category":    predicted_class,
-        "confidence":  round(confidence, 4),
-        "score":       score,
-        "shap_values": top_shap,
-        "tier":        3,
-        "tier_reason": "",
+        "category":        predicted_class,
+        "confidence":      round(confidence, 4),
+        "confidence_type": "calibrated",
+        "score":           score,
+        "shap_values":     top_shap,
+        "tier":            3,
+        "tier_reason":     "",
+        "degraded":        False,
     }
 
 

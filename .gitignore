@@ -41,3 +41,6 @@ npm-debug.log*
 # Supabase local
 .supabase/
 DESIGN_SYSTEM.md
+
+# claude/worktrees
+.claude/

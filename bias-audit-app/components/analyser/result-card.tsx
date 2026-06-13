@@ -1,14 +1,19 @@
 "use client";
 
 interface ResultCardProps {
-  content:      string;
-  score:        number;
-  category:     string;
-  confidence:   number;
-  shap_values:  Record<string, number>;
-  explanation:  string;
-  onAction:     (action: "approve" | "flag" | "escalate") => void;
-  actionTaken?: string;
+  content:         string;
+  score:           number;
+  category:        string;
+  confidence:      number;
+  shap_values:     Record<string, number>;
+  tier:            number;
+  tier_reason:     string;
+  confidence_type: string;
+  degraded:        boolean;
+  error?:          string;
+  explanation:     string;
+  onAction:        (action: "approve" | "flag" | "escalate") => void;
+  actionTaken?:    string;
 }
 
 const getBadgeClass = (category: string, score: number) => {
@@ -25,19 +30,83 @@ const getRiskLabel = (category: string, score: number) => {
   return "HIGH RISK";
 };
 
+const TIER_LABEL: Record<number, string> = {
+  1: "not analysed",
+  2: "LLM semantic",
+  3: "XGBoost + SHAP",
+};
+
 export function ResultCard({
   content, score, category, confidence, shap_values,
+  tier, tier_reason, confidence_type,
+  degraded, error,
   explanation, onAction, actionTaken,
 }: ResultCardProps) {
+
+  const contentSnippet = content.length > 120 ? content.slice(0, 120) + "…" : content;
+
+  // ── Degraded state — API failure, no real classification ─────────────────────
+  if (degraded) {
+    return (
+      <div className="bg-panel border border-destructive/50 p-4 space-y-3">
+        <p className="text-sm text-foreground/80 leading-relaxed border-l-2 border-border pl-3 italic">
+          "{contentSnippet}"
+        </p>
+        <div className="space-y-1">
+          <p className="text-[9px] tracking-widest uppercase text-destructive font-mono">
+            CLASSIFICATION UNAVAILABLE — API ERROR
+          </p>
+          {error && (
+            <p className="text-[9px] font-mono text-muted-foreground leading-relaxed">
+              {error}
+            </p>
+          )}
+          <p className="text-[9px] text-muted-foreground leading-relaxed pt-1">
+            This result could not be classified. It has been excluded from the audit log
+            and cannot be actioned. Resubmit to try again.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Normal verdict ────────────────────────────────────────────────────────────
   const badgeClass = getBadgeClass(category, score);
   const shapWords  = Object.keys(shap_values);
+
+  const confidenceDisplay = () => {
+    if (confidence_type === "none") {
+      return (
+        <span className="font-mono text-[10px] text-muted-foreground">
+          not analysed — input too short
+        </span>
+      );
+    }
+    if (confidence_type === "estimated") {
+      return (
+        <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
+          {(confidence * 100).toFixed(0)}%{" "}
+          <span className="border border-muted-foreground/40 px-1 py-0.5 text-[8px] tracking-widest uppercase">
+            est.
+          </span>
+          {" "}confidence
+        </span>
+      );
+    }
+    // calibrated
+    return (
+      <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
+        {(confidence * 100).toFixed(0)}% confidence
+      </span>
+    );
+  };
 
   return (
     <div className="bg-panel border border-border p-4 space-y-3">
 
       {/* Content snippet */}
       <p className="text-sm text-foreground/80 leading-relaxed border-l-2 border-border pl-3 italic">
-        "{content.length > 120 ? content.slice(0, 120) + "…" : content}"
+        "{contentSnippet}"
       </p>
 
       {/* Verdict row */}
@@ -45,14 +114,15 @@ export function ResultCard({
         <span className={`text-[9px] tracking-widest uppercase px-2.5 py-1 border ${badgeClass}`}>
           {category.replace(/_/g, " ")}
         </span>
-        <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
-          {(confidence * 100).toFixed(0)}% confidence
-        </span>
+        {confidenceDisplay()}
         <span className={`font-mono text-[10px] tabular-nums ${badgeClass.split(" ")[1]}`}>
           {getRiskLabel(category, score)}
         </span>
         <span className="font-mono text-[10px] text-muted-foreground tabular-nums ml-auto">
           Score: {score}
+        </span>
+        <span className="text-[8px] tracking-widest uppercase text-muted-foreground/50 font-mono">
+          {TIER_LABEL[tier] ?? `tier ${tier}`}
         </span>
       </div>
 
@@ -102,10 +172,12 @@ export function ResultCard({
       )}
 
       {/* Plain English explanation */}
-      <div className="bg-recommendations border-l-2 border-primary px-4 py-3">
-        <p className="text-[9px] tracking-widest text-primary uppercase mb-1">EXPLANATION</p>
-        <p className="text-xs text-foreground/90 leading-relaxed">{explanation}</p>
-      </div>
+      {explanation && (
+        <div className="bg-recommendations border-l-2 border-primary px-4 py-3">
+          <p className="text-[9px] tracking-widest text-primary uppercase mb-1">EXPLANATION</p>
+          <p className="text-xs text-foreground/90 leading-relaxed">{explanation}</p>
+        </div>
+      )}
 
       {/* Reviewer action row */}
       <div className="flex items-center gap-2 pt-1 border-t border-border">

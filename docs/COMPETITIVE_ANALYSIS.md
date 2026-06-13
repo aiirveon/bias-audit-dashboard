@@ -88,7 +88,7 @@ The Bias Audit Dashboard sits at the intersection of segments 2 and 3: a bias-sp
 | Plain English explanation | No | No | Yes | Yes |
 | Reviewer action workflow | No | No | No | Yes |
 | Audit log for compliance | No | No | Yes | Yes |
-| Fairness metrics panel | No | No | Yes | Yes |
+| Fairness metrics panel | No | No | Yes | Planned (v2) |
 | Designed for non-ML users | No | No | No | Yes |
 | UK regulatory framing | No | No | Partial | Yes (Ofcom, OSA 2023) |
 
@@ -103,6 +103,6 @@ The Bias Audit Dashboard is the only tool designed specifically for the trust an
 3. Plain English explanations for non-technical reviewers
 4. A human-in-the-loop reviewer action workflow (Approve · Flag · Escalate)
 5. A full audit log exportable for Ofcom compliance reporting
-6. Fairness metrics computed using Fairlearn — with plain English pass/fail status
+6. Fairness tooling on the roadmap: v1 reports a dataset balance ratio; v2 will add prediction-level fairness metrics via Fairlearn with plain English pass/fail status
 
 We are not competing with enterprise ML governance platforms on depth of model auditing. We are competing with the spreadsheet and the manual process — and we win on speed, consistency, and auditability.

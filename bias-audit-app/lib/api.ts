@@ -1,10 +1,15 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export interface AnalyseResult {
-  score:       number;
-  category:    string;
-  confidence:  number;
-  shap_values: Record<string, number>;
+  score:           number;
+  category:        string;
+  confidence:      number;
+  shap_values:     Record<string, number>;
+  tier:            number;
+  tier_reason:     string;
+  confidence_type: string;
+  degraded:        boolean;
+  error?:          string;
 }
 
 export interface ExplainResult {
