@@ -17,8 +17,8 @@ classes   = None
 explainer = None
 
 # ── Tier thresholds ────────────────────────────────────────────────────────────
-# Tier 1: <= 3 words  → skip analysis entirely, return neutral, cost = £0
-# Tier 2: 4–15 words  → Claude API classification only, no SHAP, cost ~£0.0003
+# Tier 1: <= 2 words  → skip analysis entirely, return neutral, cost = £0
+# Tier 2: 3–15 words  → Claude API classification only, no SHAP, cost ~£0.0003
 # Tier 3: > 15 words  → full XGBoost + SHAP pipeline, cost ~£0.0001
 
 TIER1_MAX_WORDS = 2
@@ -61,7 +61,7 @@ def _tier1_predict(content: str) -> dict:
 
 
 def _tier2_predict(content: str) -> dict:
-    """Tier 2 — 4 to 15 words. Claude API semantic classification. No SHAP."""
+    """Tier 2 — 3 to 15 words. Claude API semantic classification. No SHAP."""
     client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
     prompt = (
@@ -179,8 +179,8 @@ def predict(content: str) -> dict:
     """
     Tiered prediction router.
 
-    Tier 1 (<= 3 words):  Skip. Return neutral. Cost = £0.
-    Tier 2 (4-15 words):  Claude API semantic classification. Cost ~£0.0003/call.
+    Tier 1 (<= 2 words):  Skip. Return neutral. Cost = £0.
+    Tier 2 (3-15 words):  Claude API semantic classification. Cost ~£0.0003/call.
     Tier 3 (> 15 words):  XGBoost + SHAP. Cost ~£0.0001/call.
 
     Business rationale: TF-IDF requires sufficient token context for reliable
